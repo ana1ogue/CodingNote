@@ -188,6 +188,7 @@ int main()
 
 
 /*
+03-03
 this指针 =》 类-》很多对象  共享一套成员方法
 成员方法，方法的参数都会添加一个this指针
 
@@ -212,7 +213,7 @@ public:
 		_top = -1;
 		_size = size;
 	}
-	// 自定以拷贝构造函数 《= 对象的浅拷贝现在有问题了
+	// 自定义拷贝构造函数 《= 对象的浅拷贝现在有问题了
 	SeqStack(const SeqStack &src)
 	{
 		cout << "SeqStack(const SeqStack &src)" << endl;
