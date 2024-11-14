@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.438
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35431.28
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "01C++基础部分", "01C++基础部分\01C++基础部分.vcxproj", "{000D2BF6-4BA4-4749-A979-6C8C36D76872}"
 EndProject
@@ -14,6 +14,11 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "05 C++继承与多态", "继承与多态\继承与多态.vcxproj", "{6938D8A5-7C72-41FA-A64B-A9A5E261EC4E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "06 C++ STL", "06 C++ STL\06 C++ STL.vcxproj", "{CF97F768-1074-495B-BD3D-6252612BB215}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "解决方案项", "解决方案项", "{DF22A884-EB30-4525-B985-B434E2E010B6}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
