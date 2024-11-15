@@ -13,7 +13,7 @@ list
 2.容器适配器
 stack
 queue
-priority_queue
+priority_queue 默认大根堆
 3.关联容器 
 无序关联容器 => 链式哈希表  增删查O(1) 
 set:集合 key   map:映射表 [key,value]
