@@ -26,19 +26,19 @@ public:
 		//CComplex comp;
 		//comp.mreal = this->mreal + src.mreal;
 		//comp.mimage = this->mimage + src.mimage;
-		//return comp;
+		//return comp; // 若返回引用，实际上返回地是临时对象指针
 		//return CComplex(this->mreal + src.mreal,
 			//this->mimage + src.mimage);
 	//}
-	CComplex operator++(int)
+	CComplex operator++(int) // 后置++
 	{
 		//CComplex comp = *this;
 		//mreal += 1;
 		//mimage += 1;
 		//return comp;
-		return CComplex(mreal++, mimage++);
+		return CComplex(mreal++, mimage++); // 临时对象优化
 	}
-	CComplex& operator++()
+	CComplex& operator++() //与 后置++区别
 	{
 		mreal += 1;
 		mimage += 1;
@@ -62,11 +62,13 @@ CComplex operator+(const CComplex &lhs, const CComplex &rhs)
 {
 	return CComplex(lhs.mreal + rhs.mreal, lhs.mimage + rhs.mimage);
 }
+// 流对象不要加const 因为在改变
 ostream& operator<<(ostream &out, const CComplex &src)
 {
 	out << "mreal:" << src.mreal << " mimage:" << src.mimage << endl;
 	return out;
 }
+// 流对象不要加const 因为在改变
 istream& operator>>(istream &in, CComplex &src)
 {
 	in >> src.mreal >> src.mimage;
@@ -100,10 +102,13 @@ int main01()
 	// void comp1.operator+=(comp2)   ::operator+=(comp1, comp2)
 	comp1 += comp2;
 	//comp1.show(); // 对象信息的输出
+	// ::operator<<(cout,comp1) 若返回 void  void是无法将输出放入输出流
 	//cout ::operator<<(cout, comp1)   void << endl;
 	//ostream& operator<<(ostream &out, const CComplex &src)
 	cout << comp1 << endl;
 	cin >> comp1 >> comp2;
+	// 1. cout ::operator<<(cout, comp1)
+	// 2. cout ::opeartor<<(cout, comp2)
 	cout << comp1 << comp2 << endl;
 
     return 0;
@@ -113,5 +118,6 @@ template<typename T>
 void show(T a)// CComplex a
 {
 	//a.show();
+	//如何用 cout 打印 CComplex对象？
 	cout << a << endl; // T int  cout<<10<<endl;  CComplex
 }

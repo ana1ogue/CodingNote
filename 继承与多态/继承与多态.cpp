@@ -854,122 +854,129 @@ int main()
 #endif
 
 
-#if 0
-/*
-1.派生类从继承可以继承来所有的成员(变量和方法)，除过构造函数和析构函数
 
-派生类怎么初始化从基类继承来的成员变量呢？
-解答：通过调用基类相应的构造函数来初始化
 
-派生类的构造函数和析构函数，负责初始化和清理派生类部分
-派生类从基类继承来的成员，的初始化和清理由谁负责呢？是由基类的构造和析构函数来负责
+	namespace gl01 {
+	/*
+	1.继承的本质和原理
+	继承的本质：a.代码的复用  b.
+	类和类之间的关系：
+	组合：a part of... ...一部分的关系
+	继承：a kind of... ...一种的关系
 
-》》》派生类对象构造和析构的过程是：
-1.派生类调用基类的构造函数，初始化从基类继承来的成员
-2.调用派生类自己的构造函数，初始化派生类自己特有的成员
-.....派生类对象的作用域到期了
-3.调用派生类的析构函数，释放派生类成员可能占用的外部资源（堆内存，文件）
-4.调用基类的析构函数，释放派生类内存中，从基类继承来的成员可能占用的外部资源（堆内存，文件）
-*/
-class Base
-{
-public:
-	Base(int data) :ma(data) { cout << "Base()" << endl; }
-	~Base() { cout << "~Base()" << endl; }
-protected:
-	int ma;
-};
-class Derive : public Base
-{
-public:
-	//“Base”: 没有合适的默认构造函数可用
-	Derive(int data) 
-		:Base(data), mb(data)  // ma(data)
+	继承方式     基类的访问限定     派生类的访问限定      (main)外部的访问限定
+	public
+				  public			public                 Y
+				  protected			protected			   N
+				  private			不可见的				   N
+	protected(基类的成员的访问限定，在派生类里面是不可能超过继承方式的)
+				  public			protected			   N
+				  protected			protected			   N
+				  private			不可见的				   N
+	private
+				  public			private				   N
+				  protected			private				   N
+				  private			不可见的				   N
+
+	总结：
+	1.外部只能访问对象public的成员，protected和private的成员无法直接访问
+	2.在继承结构中，派生类从基类可以继承过来private的成员，但是派生类却无法直接访问
+	3.protected和private的区别？在基类中定义的成员，想被派生类访问，但是不想被外部访问，
+	那么在基类中，把相关成员定义成protected保护的；如果派生类和外部都不打算访问，那么
+	在基类中，就把相关成员定义成private私有的。
+
+	默认的继承方式是什么？
+	要看派生类是用class定义的，还是struct定义的？
+	class定义派生类，默认继承方式就是private私有的
+	struct定义派生类，默认继承方式就是public私有的
+	*/
+	class A
 	{
-		cout << "Derive()" << endl;
-	}
-	~Derive()
+	public:
+		int ma;
+	protected:
+		int mb;
+	private:
+		int mc; // 自己或者友元能访问私有的成员
+	};
+	//继承 A 基类/父类   B 派生类/子类
+	struct B : A
 	{
-		cout << "~Derive()" << endl;
-	}
-private:
-	int mb;
-};
-int main()
-{
-	Derive d(20);
+	public:
+		void func()
+		{
+			cout << ma << endl;
+		}
+		int md;
+	protected:
+		int me;
+	private:
+		int mf;
+		// int ma;
+	};
+	class C : public B
+	{
+		// 在C里面，请问ma的访问限定是什么？ 不可见的，但是能继承来
+	};
+	int main01()
+	{
+		B b;
+		//cout << b.mb << endl;
 
+		return 0;
+	}
+}
+namespace gl02 {
+
+	/*
+	1.派生类从继承可以继承来所有的成员(变量和方法)，除了构造函数和析构函数
+
+	派生类怎么初始化从基类继承来的成员变量呢？
+	解答：通过调用基类相应的构造函数来初始化
+
+	派生类的构造函数和析构函数，负责初始化和清理派生类部分
+	派生类从基类继承来的成员，的初始化和清理由谁负责呢？是由基类的构造和析构函数来负责
+
+	》》》派生类对象构造和析构的过程是：
+	1.派生类调用基类的构造函数，初始化从基类继承来的成员
+	2.调用派生类自己的构造函数，初始化派生类自己特有的成员
+	.....派生类对象的作用域到期了
+	3.调用派生类的析构函数，释放派生类成员可能占用的外部资源（堆内存，文件）
+	4.调用基类的析构函数，释放派生类内存中，从基类继承来的成员可能占用的外部资源（堆内存，文件）
+	*/
+	class Base
+	{
+	public:
+		Base(int data) :ma(data) { cout << "Base()" << endl; }
+		~Base() { cout << "~Base()" << endl; }
+	protected:
+		int ma;
+	};
+	class Derive : public Base
+	{
+	public:
+		//“Base”: 没有合适的默认构造函数可用
+		Derive(int data)
+			:Base(data), mb(data)  // ma(data)
+		{
+			cout << "Derive()" << endl;
+		}
+		~Derive()
+		{
+			cout << "~Derive()" << endl;
+		}
+	private:
+		int mb;
+	};
+	int main02()
+	{
+		Derive d(20);
+
+		return 0;
+	}
+}
+
+int main(){
+	//gl01::main01();
 	return 0;
 }
-
-
-
-/*
-1.继承的本质和原理
-继承的本质：a.代码的复用  b.
-类和类之间的关系：
-组合：a part of... ...一部分的关系
-继承：a kind of... ...一种的关系
-
-继承方式     基类的访问限定     派生类的访问限定      (main)外部的访问限定
-public 
-			  public			public                 Y
-			  protected			protected			   N
-			  private			不可见的				   N         
-protected(基类的成员的访问限定，在派生类里面是不可能超过继承方式的)
-			  public			protected			   N
-			  protected			protected			   N
-			  private			不可见的				   N
-private
-			  public			private				   N
-			  protected			private				   N
-			  private			不可见的				   N
-
-总结：
-1.外部只能访问对象public的成员，protected和private的成员无法直接访问
-2.在继承结构中，派生类从基类可以继承过来private的成员，但是派生类却无法直接访问
-3.protected和private的区别？在基类中定义的成员，想被派生类访问，但是不想被外部访问，
-那么在基类中，把相关成员定义成protected保护的；如果派生类和外部都不打算访问，那么
-在基类中，就把相关成员定义成private私有的。
-
-默认的继承方式是什么？
-要看派生类是用class定义的，还是struct定义的？
-class定义派生类，默认继承方式就是private私有的
-struct定义派生类，默认继承方式就是public私有的
-*/
-class A
-{
-public:
-	int ma;
-protected:
-	int mb;
-private:
-	int mc; // 自己或者友元能访问私有的成员
-};
-//继承 A 基类/父类   B 派生类/子类
-struct B : A
-{
-public:
-	void func() 
-	{
-		cout << ma << endl;
-	}
-	int md;
-protected:
-	int me;
-private:
-	int mf;
-	// int ma;
-};
-class C : public B
-{
-	// 在C里面，请问ma的访问限定是什么？ 不可见的，但是能继承来
-};
-int main()
-{
-	B b;
-	//cout << b.mb << endl;
-
-    return 0; 
-}
-#endif

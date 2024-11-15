@@ -188,7 +188,7 @@ int main()
 
 
 /*
-03-03
+03-03 03-04
 this指针 =》 类-》很多对象  共享一套成员方法
 成员方法，方法的参数都会添加一个this指针
 
@@ -232,7 +232,7 @@ public:
 		delete[]_pstack;
 		_pstack = nullptr;
 	}
-	// 赋值重载函数 s1 = s1;
+	// 赋值重载函数 s2 = s1;
 	void operator=(const SeqStack &src)
 	{
 		cout << "operator=" << endl;
@@ -451,7 +451,7 @@ public:
 		{
 			return *this;  // str1
 		}
-
+		// 释放原先资源
 		delete[]m_data;
 
 		m_data = new char[strlen(other.m_data) + 1];
