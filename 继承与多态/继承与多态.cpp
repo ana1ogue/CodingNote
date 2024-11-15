@@ -20,356 +20,78 @@ using namespace std;
 11.继承多态常见笔试面试题分享
 */
 
-#if 0
-/*
-C++语言级别提供的四种类型转换方式
-int a = (int)b;
-const_cast : 去掉（指针或者引用）常量属性的一个类型转换
-static_cast :  提供编译器认为安全的类型转换（没有任何联系的类型之间的转换就被否定了）
-reinterpret_cast : 类似于C风格的强制类型转换
-dynamic_cast : 主要用在继承结构中，可以支持RTTI类型识别的上下转换
-*/
-
-class Base
+namespace gl15
 {
-public:
-	virtual void func() = 0;
-};
-class Derive1 : public Base
-{
-public:
-	void func() { cout << "call Derive1::func" << endl; }
-};
-class Derive2 : public Base
-{
-public:
-	void func() { cout << "call Derive2::func" << endl; }
-	// Derive2实现新功能的API接口函数
-	void derive02func() 
-	{ 
-		cout << "call Derive2::derive02func" << endl; 
-	}
-};
-/*
-typeid(*p).name() == "Derive"
-*/
-void showFunc(Base *p)
-{
-	// dynamic_cast会检查p指针是否指向的是一个Derive2类型的对象？
-	// p->vfptr->vftable RTTI信息 如果是，dynamic_cast转换类型成功，
-	// 返回Derive2对象的地址，给pd2；否则返回nullptr
-	// static_cast编译时期的类型转换  dynamic_cast运行时期的类型转换 支持RTTI信息识别
-	Derive2 *pd2 = dynamic_cast<Derive2*>(p);
-	if (pd2 != nullptr)
-	{
-		pd2->derive02func();
-	}
-	else
-	{
-		p->func(); // 动态绑定  *p的类型 Derive2  derive02func
-	}
-}
-int main()
-{
-	Derive1 d1;
-	Derive2 d2;
-	showFunc(&d1);
-	showFunc(&d2);
-
-	//static_cast 基类类型 《=》 派生类类型  能不能用static_cast?当然可以！
-	//int *p = nullptr;
-	//double* b = reinterpret_cast<double*>(p);
-
-	//const int a = 10;
-	//int *p1 = (int*)&a;
-	//int *p2 = const_cast<int*>(&a);
-	// const_cast<这里面必须是指针或者引用类型 int* int&>
-	//int b = const_cast<int>(a);
-
-	return 0;
-}
-
-
-/*
-C++的多重继承 - 菱形继承的问题  派生类有多份间接基类的数据 设计的问题
-好处，可以做更多代码的复用   D -> B,C    B *p = new D()   C *p = new D()
-*/
-class A
-{
-public:
-	A(int data) :ma(data) { cout << "A()" << endl; }
-	~A() { cout << "~A()" << endl; }
-protected:
-	int ma;
-};
-//=======================================
-class B : virtual public A
-{
-public:
-	B(int data) :A(data), mb(data) { cout << "B()" << endl; }
-	~B() { cout << "~B()" << endl; }
-protected:
-	int mb;
-};
-class C : virtual public A
-{
-public:
-	C(int data) :A(data), mc(data) { cout << "C()" << endl; }
-	~C() { cout << "~C()" << endl; }
-protected:
-	int mc;
-};
-//=========================================
-class D : public B, public C
-{
-public:
-	//“A::A”: 没有合适的默认构造函数可用
-	D(int data) :A(data), B(data), C(data), md(data) { cout << "D()" << endl; }
-	~D() { cout << "~D()" << endl; }
-protected:
-	int md;
-};
-int main()
-{
-	D d(10);
-
-	return 0;
-}
-
-
-/*
-多重继承 ：代码的复用   一个派生类有多个基类
-class C: public A, public B
-{
-};
-
-抽象类(有纯虚函数的类) / 虚基类 被虚继承的类称作虚基类 vbptr和vbtable
-virtual
-1.修饰成员方法是虚函数
-2.可以修饰继承方式，是虚继承。被虚继承的类，称作虚基类
-*/
-class A
-{
-public:
-	virtual void func() { cout << "call A::func" << endl; }
-	void operator delete(void *ptr)
-	{
-		cout << "operator delete p:" << ptr << endl;
-		free(ptr);
-	}
-private:
-	int ma;
-};
-class B : virtual public A
-{
-public:
-	void func() { cout << "call B::func" << endl; }
-
-	void* operator new(size_t size)
-	{
-		void *p = malloc(size);
-		cout << "operator new p:" << p << endl;
-		return p;
-	}
-private:
-	int mb;
-};
-/*
-A a; 4个字节
-B b; ma,mb  8个字节+4=12个字节   vbptr
-*/
-int main()
-{
-	// 基类指针指向派生类对象，永远指向的是派生类基类部分数据的起始地址
-	B b;
-	A *p = &b;//new B(); // B::vftable
-	cout << "main p:" << p << endl;
-	p->func();
-	//delete p;
-
-	return 0;
-}
-#endif
-
-
-
-#if 0
-class Base
-{
-public:
-	Base()
-	{
-		/*
-		push ebp
-		mov ebp, esp
-		sub esp, 4Ch
-		rep stos esp<->ebp 0xCCCCCCCC(windows VS GCC/G++)
-		vfptr <- &Base::vftable
-		*/
-		cout << "call Base()" << endl;
-		clear();
-	}
-	void clear() { memset(this, 0, sizeof(*this)); }
-	virtual void show()
-	{
-		cout << "call Base::show()" << endl;
-	}
-};
-class Derive : public Base
-{
-public:
-	Derive()
-	{
-		/*
-		push ebp
-		mov ebp, esp
-		sub esp, 4Ch
-		rep stos esp<->ebp 0xCCCCCCCC(windows VS GCC/G++)
-		vfptr <- &Derive::vftable
-		*/
-		cout << "call Derive()" << endl;
-	}
-	void show()
-	{
-		cout << "call Derive::show()" << endl;
-	}
-};
-int main()
-{
-	//Base *pb1 = new Base();
 	/*
-	mov eax, dword ptr[pb1]
-	mov ecx, dword ptr[eax] eax:0x00000000 不是Base::vftable
-	call ecx
+	C++语言级别提供的四种类型转换方式
+	int a = (int)b;
+	const_cast : 去掉（指针或者引用）常量属性的一个类型转换
+	static_cast :  提供编译器认为安全的类型转换（没有任何联系的类型之间的转换就被否定了）
+	reinterpret_cast : 类似于C风格的强制类型转换
+	dynamic_cast : 主要用在继承结构中，可以支持RTTI类型识别的上下转换
 	*/
-	//pb1->show(); // 动态绑定
-	//delete pb1;
 
-	Base *pb2 = new Derive();
-	// 动态绑定 call Derive::show()
+	class Base
+	{
+	public:
+		virtual void func() = 0;
+	};
+	class Derive1 : public Base
+	{
+	public:
+		void func() { cout << "call Derive1::func" << endl; }
+	};
+	class Derive2 : public Base
+	{
+	public:
+		void func() { cout << "call Derive2::func" << endl; }
+		// Derive2实现新功能的API接口函数
+		void derive02func()
+		{
+			cout << "call Derive2::derive02func" << endl;
+		}
+	};
 	/*
-	vfptr里面存储的是vftable的地址
-	vfptr <- vftable
+	typeid(*p).name() == "Derive"
 	*/
-	pb2->show(); 
-	delete pb2;
-
-	return 0;
-}
-
-
-
-class Base
-{
-private:
-	virtual void show()
+	void showFunc(Base* p)
 	{
-		cout << "call Base::show" << endl;
+		// 需要识别 *p 指向的对象类型
+		// dynamic_cast会检查p指针是否指向的是一个Derive2类型的对象？
+		// p->vfptr->vftable RTTI信息 如果是，dynamic_cast转换类型成功，
+		// 返回Derive2对象的地址，给pd2；否则返回nullptr
+		// static_cast编译时期的类型转换  dynamic_cast运行时期的类型转换 支持RTTI信息识别
+		Derive2* pd2 = dynamic_cast<Derive2*>(p);
+		if (pd2 != nullptr)
+		{
+			pd2->derive02func();
+		}
+		else
+		{
+			p->func(); // 动态绑定  *p的类型 Derive2  derive02func
+		}
 	}
-};
-class Derive : public Base
-{
-public:
-	void show()
+	int main15()
 	{
-		cout << "call Derive::show" << endl;
+		Derive1 d1;
+		Derive2 d2;
+		showFunc(&d1);
+		showFunc(&d2);
+
+		//static_cast 基类类型 《=》 派生类类型  能不能用static_cast?当然可以！
+		//int *p = nullptr;
+		//double* b = reinterpret_cast<double*>(p);
+
+	#if 0
+		const int a = 10;
+		int *p1 = (int*)&a;
+		int *p2 = const_cast<int*>(&a);
+		// const_cast<这里面必须是指针或者引用类型 int* int&>
+		int b = const_cast<int>(a);
+	#endif
+		return 0;
 	}
-};
-int main()
-{
-	Derive *p = new Derive();
-	/*
-	成员方法能不能调用，就是说方法的访问权限是不是public的，是在编译阶段就需要确定
-	好的
-
-	编译阶段 Base::show
-	call Base::show   call ecx
-	*/
-	//“Base::show”: 无法访问 private 成员(在“Base”类中声明)
-	p->show(); // 最终能调用到Derive::show，是在运行时期才确定的
-	delete p;
-	return 0;
 }
-
-
-
-class Base
-{
-public:
-	virtual void show(int i = 10)
-	{
-		cout << "call Base::show i:" << i << endl;
-	}
-};
-class Derive : public Base
-{
-public:
-	void show(int i = 20)
-	{
-		cout << "call Derive::show i:" << i << endl;
-	}
-};
-int main()
-{
-	Base *p = new Derive(); // 虚析构函数
-	/*
-	push 0Ah => 函数调用，参数压栈是在编译时期就确定好的
-	mov eax, dword ptr[p]
-	mov ecx, dword ptr[eax]
-	call ecx
-	*/
-	p->show(); // 动态绑定 p-> Derive vfptr -> Derive vftable
-	delete p;
-
-	return 0;
-}
-
-
-
-
-class Animal
-{
-public:
-	Animal(string name) :_name(name) {}
-	// 纯虚函数
-	virtual void bark() = 0;
-protected:
-	string _name;
-};
-// 以下是动物实体类
-class Cat : public Animal
-{
-public:
-	Cat(string name) :Animal(name) {}
-	void bark() { cout << _name << " bark: miao miao!" << endl; }
-};
-class Dog : public Animal
-{
-public:
-	Dog(string name) :Animal(name) {}
-	void bark() { cout << _name << " bark: wang wang!" << endl; }
-};
-int main()
-{
-	Animal *p1 = new Cat("加菲猫"); // vfptr -> Dog vftable
-	Animal *p2 = new Dog("二哈"); // vfptr -> Cat vftable
-
-	int *p11 = (int*)p1;
-	int *p22 = (int*)p2;
-	int tmp = p11[0]; // p11[0]访问的就是Cat的前4个字节
-	p11[0] = p22[0]; // p22[0]访问的就是Dog的前4个字节
-	p22[0] = tmp;
-
-	p1->bark(); // p1 -> Cat vfptr -> Dog vftable bark
-	p2->bark(); // p2 -> Dog vfptr -> Cat vftable bark
-
-	delete p1;
-	delete p2;
-	
-	return 0;
-}
-#endif
-
 
 namespace gl01 {
 	/*
@@ -992,6 +714,309 @@ namespace gl08
 		return 0;
 	}
 }
+
+// 例题 gl09 - gl12
+namespace gl09
+{
+	class Animal
+	{
+	public:
+		Animal(string name) :_name(name) {}
+		// 纯虚函数
+		virtual void bark() = 0;
+	protected:
+		string _name;
+	};
+	// 以下是动物实体类
+	class Cat : public Animal
+	{
+	public:
+		Cat(string name) :Animal(name) {}
+		void bark() { cout << _name << " bark: miao miao!" << endl; }
+	};
+	class Dog : public Animal
+	{
+	public:
+		Dog(string name) :Animal(name) {}
+		void bark() { cout << _name << " bark: wang wang!" << endl; }
+	};
+	int main()
+	{
+		Animal* p1 = new Cat("加菲猫"); // vfptr -> Dog vftable
+		Animal* p2 = new Dog("二哈"); // vfptr -> Cat vftable
+
+		int* p11 = (int*)p1;
+		int* p22 = (int*)p2;
+		// 交换虚表
+		int tmp = p11[0]; // p11[0]访问的就是Cat的前4个字节
+		p11[0] = p22[0]; // p22[0]访问的就是Dog的前4个字节
+		p22[0] = tmp;
+
+		p1->bark(); // p1 -> Cat vfptr -> Dog vftable bark
+		p2->bark(); // p2 -> Dog vfptr -> Cat vftable bark
+
+		delete p1;
+		delete p2;
+
+		return 0;
+	}
+}
+
+namespace gl10
+{
+	// 多态调用 派生类虚函数形参默认值永远不会被调用
+	class Base
+	{
+	public:
+		virtual void show(int i = 10)
+		{
+			cout << "call Base::show i:" << i << endl;
+		}
+	};
+	class Derive : public Base
+	{
+	public:
+		void show(int i = 20)
+		{
+			cout << "call Derive::show i:" << i << endl;
+		}
+	};
+	int main10()
+	{
+		Base* p = new Derive(); // 虚析构函数
+		/*
+		push 0Ah => 函数调用，参数压栈是在编译时期就确定好的
+		mov eax, dword ptr[p]
+		mov ecx, dword ptr[eax]
+		call ecx
+		默认值时 Base 的默认参数
+		*/
+		p->show(); // 动态绑定 p-> Derive vfptr -> Derive vftable
+		delete p;
+
+		return 0;
+	}
+}
+
+namespace gl11 {
+	class Base
+	{
+	public:
+		virtual void show()
+		{
+			cout << "call Base::show" << endl;
+		}
+	};
+	class Derive : public Base
+	{
+	private:
+		void show()
+		{
+			cout << "call Derive::show" << endl;
+		}
+	};
+	int main11()
+	{
+		Base* p = new Derive();
+		/*
+		Derived::show() 设置为 private public 只要Base::show() 是public都可以调用
+
+		成员方法能不能调用，就是说方法的访问权限是不是public的，是在编译阶段就需要确定好的
+		编译阶段 只能看到 Base::show
+		call Base::show   call ecx
+		*/
+		//“Base::show”: 无法访问 private 成员(在“Base”类中声明)
+		p->show(); // 最终能调用到Derive::show，是在运行时期才确定的
+		delete p;
+		return 0;
+	}
+}
+
+namespace gl12
+{
+	// vfptr的生成在进入构造函数时 也就是 { 的后面
+	class Base
+	{
+	public:
+		Base()
+		{
+			/*
+			push ebp
+			mov ebp, esp
+			sub esp, 4Ch
+			rep stos esp<->ebp 0xCCCCCCCC(windows VS GCC/G++)
+			vfptr <- &Base::vftable
+			*/
+			cout << "call Base()" << endl;
+			clear();
+		}
+		void clear() { memset(this, 0, sizeof(*this)); }
+		virtual void show()
+		{
+			cout << "call Base::show()" << endl;
+		}
+	};
+	class Derive : public Base
+	{
+	public:
+		Derive()
+		{
+			/*
+			push ebp
+			mov ebp, esp
+			sub esp, 4Ch
+			rep stos esp<->ebp 0xCCCCCCCC(windows VS GCC/G++)
+			vfptr <- &Derive::vftable
+			*/
+			cout << "call Derive()" << endl;
+		}
+		void show()
+		{
+			cout << "call Derive::show()" << endl;
+		}
+	};
+	int main12()
+	{
+		Base *pb1 = new Base();
+		/*
+		mov eax, dword ptr[pb1]
+		mov ecx, dword ptr[eax] eax:0x00000000 不是Base::vftable
+		call ecx
+		*/
+		pb1->show(); // 动态绑定
+		delete pb1;
+
+		Base* pb2 = new Derive();
+		// 动态绑定 call Derive::show()
+		/*
+		vfptr里面存储的是vftable的地址
+		vfptr <- vftable
+		*/
+		pb2->show();
+		delete pb2;
+
+		return 0;
+	}
+}
+
+// 理解虚基类与虚继承
+namespace gl13
+{
+	/*
+	多重继承 ：代码的复用   一个派生类有多个基类
+	class C: public A, public B
+	{
+	};
+
+	抽象类(有纯虚函数的类) / 虚基类 被虚继承的类称作虚基类 vbptr和vbtable
+	virtual
+	1.修饰成员方法是虚函数
+	2.可以修饰继承方式，是虚继承。被虚继承的类，称作虚基类
+	3.虚基类的内存 会搬到派生类的后面 区别于基类与派生类的关系
+	*/
+	class A
+	{
+	public:
+		virtual void func() { cout << "call A::func" << endl; }
+		void operator delete(void* ptr)
+		{
+			cout << "operator delete p:" << ptr << endl;
+			free(ptr);
+		}
+	private:
+		int ma;
+	};
+	class B : virtual public A
+	{
+	public:
+		void func() { cout << "call B::func" << endl; }
+
+		void* operator new(size_t size)
+		{
+			void* p = malloc(size);
+			cout << "operator new p:" << p << endl;
+			return p;
+		}
+	private:
+		int mb;
+	};
+	/*
+	没虚函数时:
+	A a; 4个字节
+	B b; ma,mb  8个字节+4=12个字节   vbptr
+	*/
+	int main13()
+	{
+		/*
+		基类指针指向派生类对象，永远指向的是派生类中基类(虚基类)部分数据的起始地址
+		下面这段代码释放内存会出错 delete是从 A 开始释放内存，也就是派生类资源没释放
+		*/
+	#if 0
+		A* p = new B();
+		p->func();
+		delete p;
+	#endif
+
+		B b;
+		A* p = &b;//new B(); // B::vftable
+		cout << "main p:" << p << endl;
+		p->func();
+		//delete p;
+
+		return 0;
+	}
+}
+
+// 多重继承-菱形继承的问题
+namespace gl14
+{
+	/*
+	C++的多重继承 - 菱形继承的问题  派生类有多份间接基类的数据 设计的问题
+	好处，可以做更多代码的复用   D -> B,C    B *p = new D()   C *p = new D()
+	*/
+	class A
+	{
+	public:
+		A(int data) :ma(data) { cout << "A()" << endl; }
+		~A() { cout << "~A()" << endl; }
+	protected:
+		int ma;
+	};
+	//=======================================
+	class B : virtual public A
+	{
+	public:
+		B(int data) :A(data), mb(data) { cout << "B()" << endl; }
+		~B() { cout << "~B()" << endl; }
+	protected:
+		int mb;
+	};
+	class C : virtual public A
+	{
+	public:
+		C(int data) :A(data), mc(data) { cout << "C()" << endl; }
+		~C() { cout << "~C()" << endl; }
+	protected:
+		int mc;
+	};
+	//=========================================
+	class D : public B, public C
+	{
+	public:
+		//“A::A”: 没有合适的默认构造函数可用
+		D(int data) :A(data), B(data), C(data), md(data) { cout << "D()" << endl; }
+		~D() { cout << "~D()" << endl; }
+	protected:
+		int md;
+	};
+	int main14()
+	{
+		D d(10);
+
+		return 0;
+	}
+}
+
 int main(){
 	//gl01::main01();
 	//gl02::main02();
@@ -999,8 +1024,13 @@ int main(){
 	//gl04::main04();
 	//gl05::main05();
 	//gl06::main06();
-	gl07::main07();
-
+	//gl07::main07();
+	//gl08::main08();
+	//gl11::main11();
+	//gl12::main12();
+	//gl13::main13();
+	//gl14::main14();
+	//gl15::main15();
 
 	return 0;
 }
