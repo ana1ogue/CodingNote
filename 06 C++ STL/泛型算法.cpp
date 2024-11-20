@@ -8,17 +8,18 @@ using namespace std;
 #if 0
 /*
 五、泛型算法 = template + 迭代器 + 函数对象
-特点一：泛型算法的参数接收的都是迭代器
-特点二：泛型算法的参数还可以接收函数对象（C函数指针）
+	特点一：泛型算法的参数接收的都是迭代器
+	特点二：泛型算法的参数还可以接收函数对象（C函数指针）
 sort,find,find_if,binary_search,for_each
 
-绑定器 + 二元函数对象 =》 一元函数对象
-bind1st：把二元函数对象的operator()(a, b)的第一个形参绑定起来
-bind2nd：把二元函数对象的operator()(a, b)的第二个形参绑定起来
+绑定器 + 二元函数对象 ==>(等于) 一元函数对象
+	bind1st：把二元函数对象的operator()(a, b)的第一个形参绑定起来
+	bind2nd：把二元函数对象的operator()(a, b)的第二个形参绑定起来
 */
 int main()
 {
 	int arr[] = { 12,4,78,9,21,43,56,52,42,31};
+	// 数组构造 vector 起始元素地址-末尾元素地址
 	vector<int> vec(arr, arr+sizeof(arr)/sizeof(arr[0]));
 
 	for (int v : vec)
